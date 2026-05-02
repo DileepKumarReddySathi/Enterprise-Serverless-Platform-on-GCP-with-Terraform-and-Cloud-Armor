@@ -1,0 +1,29 @@
+steps:
+  # Step 1: Terraform Init
+  - name: 'hashicorp/terraform:1.5.0'
+    args: ['init']
+    dir: 'terraform'
+
+  # Step 2: Terraform Plan
+  - name: 'hashicorp/terraform:1.5.0'
+    args: ['plan', '-var="gcp_project_id=$PROJECT_ID"', '-var="db_password=$_DB_PASSWORD"']
+    dir: 'terraform'
+
+  # Step 3: Build Web API Docker Image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/web-api', './services/web-api']
+
+  # Step 4: Push Web API Docker Image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/web-api']
+
+  # Step 5: Terraform Apply
+  - name: 'hashicorp/terraform:1.5.0'
+    args: ['apply', '-auto-approve', '-var="gcp_project_id=$PROJECT_ID"', '-var="db_password=$_DB_PASSWORD"']
+    dir: 'terraform'
+
+substitutions:
+  _DB_PASSWORD: 'password123' # Should be passed as an override or from Secret Manager
+
+options:
+  logging: CLOUD_LOGGING_ONLY

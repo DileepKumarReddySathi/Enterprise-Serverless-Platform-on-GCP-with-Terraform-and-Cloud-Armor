@@ -24,7 +24,17 @@ type StructuredLog struct {
 }
 
 func main() {
-	dbURL := os.Getenv("DATABASE_URL")
+	dbUser := os.Getenv("DB_USER")
+	dbPass := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbHost := os.Getenv("DB_HOST") // /cloudsql/connection-name
+
+	if dbUser == "" { dbUser = "user" }
+	if dbName == "" { dbName = "serverlessdb" }
+
+	dbURL := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", 
+		dbUser, dbPass, dbName, dbHost)
+	
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %v", err)

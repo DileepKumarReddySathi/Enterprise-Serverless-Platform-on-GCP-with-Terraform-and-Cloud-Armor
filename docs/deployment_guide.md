@@ -1,39 +1,39 @@
-# Deployment Guide: Enterprise Serverless Platform on AWS
+# Deployment Guide: Enterprise Serverless Platform on GCP
 
-This document provides step-by-step instructions to deploy the platform on your AWS account.
+This document provides step-by-step instructions to deploy the platform on your Google Cloud Project.
 
 ## 📋 Prerequisites
-- AWS CLI configured with Administrator access.
-- Terraform installed.
-- Docker installed (for App Runner build).
+- **gcloud CLI** installed and authenticated.
+- **Terraform** installed.
+- **GCP Project** with billing enabled.
 
 ## 🚀 Deployment Steps
 
-### Step 1: Initialize Infrastructure
+### Step 1: Enable Required APIs
+```bash
+gcloud services enable compute.googleapis.com \
+                       sqladmin.googleapis.com \
+                       run.googleapis.com \
+                       cloudfunctions.googleapis.com \
+                       secretmanager.googleapis.com \
+                       cloudbuild.googleapis.com \
+                       eventarc.googleapis.com \
+                       vpcaccess.googleapis.com
+```
+
+### Step 2: Provision Infrastructure
 ```bash
 cd terraform
 terraform init
-terraform plan -var="db_password=YOUR_SECURE_PASSWORD"
-terraform apply -auto-approve -var="db_password=YOUR_SECURE_PASSWORD"
+terraform apply -var="gcp_project_id=YOUR_PROJECT_ID" -var="db_password=YOUR_PASSWORD"
 ```
 
-### Step 2: Push Web API to ECR
-1. Authenticate Docker to ECR:
-   ```bash
-   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
-   ```
-2. Build and tag:
-   ```bash
-   cd services/web-api
-   docker build -t web-api .
-   docker tag web-api:latest YOUR_ECR_REPO_URL:latest
-   ```
-3. Push:
-   ```bash
-   docker push YOUR_ECR_REPO_URL:latest
-   ```
+### Step 3: Deploy Services via Cloud Build
+```bash
+gcloud builds submit --config cloudbuild.yaml .
+```
 
-### Step 3: Verify Deployment
-- Retrieve the **API Gateway URL** from Terraform outputs.
-- Test the health check: `curl <URL>/health`
-- Test file upload: `curl -X POST -F "file=@test.txt" <URL>/upload`
+### Step 4: Verify Deployment
+- Retrieve the **Cloud Run URL** and **Cloud Function URL**.
+- Test the health check: `curl <CLOUD_RUN_URL>/health`
+- Test file upload: `curl -X POST -F "file=@test.txt" <FUNCTION_UPLOAD_URL>`

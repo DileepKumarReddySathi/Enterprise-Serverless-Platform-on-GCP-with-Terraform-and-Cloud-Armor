@@ -1,23 +1,20 @@
-# Enterprise Serverless Platform on AWS
+# Enterprise Serverless Platform on GCP
 
-This repository contains a production-grade, multi-service serverless application built on **Amazon Web Services (AWS)** using **Terraform**.
-
-> [!NOTE]
-> **Platform Choice Notice**: This project was originally designed for Google Cloud Platform (GCP). However, due to persistent technical errors encountered during the GCP account creation and activation process, the implementation has been migrated to **AWS**. All requirements (Serverless compute, SQL database, WAF, Secrets Management, etc.) have been fully mapped and implemented using equivalent AWS services.
+This repository contains a production-grade, multi-service serverless application built on **Google Cloud Platform (GCP)** using **Terraform**.
 
 ## 🏗️ Architecture
 
 The platform consists of:
-- **Networking**: Custom VPC with public/private subnets across multiple AZs.
+- **Networking**: Custom VPC with private subnets and VPC Access Connector for serverless-to-VPC communication.
 - **Compute**:
-  - **AWS Lambda**: Event-driven file processing and authenticated uploads.
-  - **AWS App Runner**: Containerized Go/Gin Web API.
-- **Database**: Amazon RDS for PostgreSQL (private).
+  - **GCP Cloud Functions**: Event-driven file processing and authenticated uploads.
+  - **GCP Cloud Run**: Containerized Go/Gin Web API.
+- **Database**: **Cloud SQL** for PostgreSQL (private IP only).
 - **Security**:
-  - **AWS WAF**: Web Application Firewall protecting the API.
-  - **AWS Secrets Manager**: Secure management of database credentials.
-  - **IAM**: Least-privilege roles for all services.
-- **Observability**: Structured logging with **CloudWatch** and distributed tracing with **AWS X-Ray**.
+  - **Cloud Armor**: Web Application Firewall protecting the platform.
+  - **Secret Manager**: Secure management of database credentials, injected into Cloud Run.
+  - **IAM**: Least-privilege Service Accounts for all services.
+- **Observability**: Structured logging with **Cloud Logging** and custom metrics with **Cloud Monitoring**.
 
 ## 🚀 Getting Started
 
@@ -25,20 +22,23 @@ The platform consists of:
 1. Clone the repository.
 2. Copy `.env.example` to `.env`.
 3. Launch the environment:
-   ```powershell
-   .\launch.ps1
+   ```bash
+   docker-compose up -d --build
    ```
-   *Alternatively, run `docker-compose up -d --build`.*
 
 ### Deployment
-Refer to the [Deployment Guide](docs/deployment_guide.md) for full instructions on provisioning the AWS infrastructure.
+Deployment is automated via **GCP Cloud Build**.
+1. Ensure the Cloud Build API is enabled.
+2. Run the build:
+   ```bash
+   gcloud builds submit --config cloudbuild.yaml .
+   ```
 
 ---
 
 ## 🛠️ Built With
 - **Terraform**: Infrastructure as Code.
 - **Go / Gin**: High-performance Web API.
-- **Node.js**: Serverless Lambda functions.
+- **Node.js**: Cloud Functions.
 - **Docker**: Containerization.
-- **AWS**: Core cloud platform.
-# Enterprise-Serverless-Platform-on-GCP-with-Terraform-and-Cloud-Armor
+- **GCP**: Core cloud platform.

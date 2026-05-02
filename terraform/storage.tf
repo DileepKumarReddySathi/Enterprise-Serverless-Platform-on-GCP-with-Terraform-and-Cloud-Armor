@@ -1,14 +1,7 @@
-resource "aws_s3_bucket" "uploads" {
-  bucket = "${var.project_name}-uploads-${data.aws_caller_identity.current.account_id}"
+resource "google_storage_bucket" "upload_bucket" {
+  name          = "${var.gcp_project_id}-uploads"
+  location      = var.gcp_region
+  force_destroy = true
+
+  uniform_bucket_level_access = true
 }
-
-resource "aws_s3_bucket_public_access_block" "uploads" {
-  bucket = aws_s3_bucket.uploads.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-data "aws_caller_identity" "current" {}
